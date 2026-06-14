@@ -1,0 +1,116 @@
+﻿<main class="app-shell">
+  <section class="toolbar">
+    <div>
+      <h1>Conference Room Booking</h1>
+      <p>Book rooms, manage schedules, and notify attendees after confirmed changes.</p>
+    </div>
+    <button type="button" class="ghost" (click)="loadData()" [disabled]="loading()">Refresh</button>
+  </section>
+
+  <section class="workspace">
+    <form class="booking-panel" [formGroup]="bookingForm" (ngSubmit)="submitBooking()">
+      <h2>{{ selectedBooking() ? 'Edit booking' : 'New booking' }}</h2>
+
+      <label>
+        Room
+        <select formControlName="conferenceRoomId">
+          <option [ngValue]="null">Select a room</option>
+          <option *ngFor="let room of rooms()" [ngValue]="room.conferenceRoomId">
+            {{ room.name }} ({{ room.capacity }} persons)
+          </option>
+        </select>
+        <span *ngIf="isInvalid('conferenceRoomId')">Room is required.</span>
+      </label>
+
+      <div class="field-row">
+        <label>
+          Date
+          <input type="date" formControlName="bookingDate">
+          <span *ngIf="isInvalid('bookingDate')">Date is required.</span>
+        </label>
+        <label>
+          Persons
+          <input type="number" min="1" formControlName="numberOfPersons">
+          <span *ngIf="isInvalid('numberOfPersons')">Enter at least 1 person.</span>
+        </label>
+      </div>
+
+      <div class="field-row">
+        <label>
+          Start time
+          <input type="time" formControlName="startTime">
+          <span *ngIf="isInvalid('startTime')">Start time is required.</span>
+        </label>
+        <label>
+          End time
+          <input type="time" formControlName="endTime">
+          <span *ngIf="isInvalid('endTime')">End time is required.</span>
+        </label>
+      </div>
+
+      <label>
+        Meeting title
+        <input type="text" formControlName="meetingTitle" maxlength="200">
+        <span *ngIf="isInvalid('meetingTitle')">Meeting title is required.</span>
+      </label>
+
+      <label>
+        Booked by
+        <input type="text" formControlName="bookedBy" maxlength="150">
+        <span *ngIf="isInvalid('bookedBy')">Booked by is required.</span>
+      </label>
+
+      <label>
+        Booked by email
+        <input type="email" formControlName="bookedByEmail" maxlength="254" autocomplete="email">
+        <span *ngIf="isInvalid('bookedByEmail')">Enter a valid email address.</span>
+      </label>
+
+      <div class="actions">
+        <button type="submit" [disabled]="loading()">{{ selectedBooking() ? 'Save changes' : 'Create booking' }}</button>
+        <button type="button" class="ghost" (click)="resetForm()" [disabled]="loading()">Clear</button>
+      </div>
+
+      <p class="success" *ngIf="message()">{{ message() }}</p>
+      <p class="error" *ngIf="error()">{{ error() }}</p>
+    </form>
+
+    <section class="schedule-panel">
+      <h2>Admin dashboard</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Booked by</th>
+              <th>Booked by email</th>
+              <th>Room</th>
+              <th>Date/time</th>
+              <th>Persons</th>
+              <th>Credits</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let booking of bookings()" [class.cancelled]="booking.isCancelled">
+              <td>{{ booking.bookedBy }}</td>
+              <td>{{ booking.bookedByEmail }}</td>
+              <td>{{ booking.conferenceRoomName }}</td>
+              <td>{{ booking.bookingDate }} {{ booking.startTime }}-{{ booking.endTime }}</td>
+              <td>{{ booking.numberOfPersons }}</td>
+              <td>{{ booking.creditsUsed }}</td>
+              <td>{{ booking.bookingStatus }}</td>
+              <td class="row-actions">
+                <button type="button" class="ghost" (click)="editBooking(booking)" [disabled]="booking.isCancelled || loading()">Edit</button>
+                <button type="button" class="danger" (click)="cancelBooking(booking)" [disabled]="booking.isCancelled || loading()">Cancel</button>
+              </td>
+            </tr>
+            <tr *ngIf="!bookings().length">
+              <td colspan="8" class="empty">No bookings found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </section>
+</main>
